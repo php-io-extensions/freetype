@@ -1,6 +1,7 @@
 # Composer (tests only)
 /vendor/
 /composer.lock
+/scripts/.support-cache/
 /.phpunit.cache/
 /.phpunit.result.cache
 

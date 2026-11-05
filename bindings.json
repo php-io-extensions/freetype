@@ -1,0 +1,52 @@
+{
+  "symbols": {},
+  "glue": {
+    "FT_Library": {
+      "methods": [
+        "pointer",
+        "fromPointer"
+      ]
+    },
+    "FT_Face": {
+      "methods": [
+        "pointer",
+        "fromPointer"
+      ]
+    },
+    "FT_GlyphSlot": {
+      "methods": [
+        "pointer",
+        "fromPointer"
+      ]
+    },
+    "FT_Size": {
+      "methods": [
+        "pointer",
+        "fromPointer"
+      ]
+    },
+    "FT_Outline": {
+      "methods": [
+        "pointer",
+        "fromPointer"
+      ]
+    }
+  },
+  "helpers": {
+    "marshal": [],
+    "translate": []
+  },
+  "sites": {
+    "freetype-null-record": {
+      "kind": "refusal",
+      "outcome": 1,
+      "probe": "tests/Probes/NullRecordTest.php"
+    },
+    "freetype-memory-face-size": {
+      "kind": "refusal",
+      "outcome": 1,
+      "probe": "tests/Probes/MemoryFaceSizeTest.php"
+    }
+  },
+  "typemap": {}
+}
