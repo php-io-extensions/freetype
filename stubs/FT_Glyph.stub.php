@@ -343,4 +343,21 @@ function FT_Render_Glyph(FT_GlyphSlot $slot, int $render_mode): int {}
 
 function FT_Set_Transform(FT_Face $face, ?FT_Matrix $matrix, ?FT_Vector $delta): void {}
 
+/**
+ * Each callback receives its FT_Vector points (copies, in 26.6 after shift and delta) and then $user, as in
+ * C, and returns an int: non-zero stops the walk. PHP cannot type a property callable, so they are Closures.
+ */
+final class FT_Outline_Funcs
+{
+    public ?Closure $move_to = null;
+    public ?Closure $line_to = null;
+    public ?Closure $conic_to = null;
+    public ?Closure $cubic_to = null;
+    public int $shift = 0;
+    public int $delta = 0;
+}
+
 function FT_Outline_Embolden(FT_Outline $outline, int $strength): int {}
+
+/** Walks the outline through $func_interface; answers FreeType's error or the first non-zero callback return. */
+function FT_Outline_Decompose(FT_Outline $outline, FT_Outline_Funcs $func_interface, mixed $user): int {}

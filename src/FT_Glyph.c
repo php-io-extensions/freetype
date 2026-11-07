@@ -8,6 +8,7 @@ static zend_class_entry *phpft_ce_FT_Glyph_Metrics;
 static zend_class_entry *phpft_ce_FT_Vector;
 static zend_class_entry *phpft_ce_FT_Matrix;
 static zend_class_entry *phpft_ce_FT_Bitmap;
+static zend_class_entry *phpft_ce_FT_Outline_Funcs;
 
 PHPFT_HANDLE_METHODS(FT_GlyphSlot)
 PHPFT_HANDLE_METHODS(FT_Outline)
@@ -140,6 +141,128 @@ ZEND_FUNCTION(FT_Outline_Embolden)
 	RETURN_LONG(FT_Outline_Embolden(phpft_handle_ptr(outline), (FT_Pos) strength));
 }
 
+/* One FT_Outline_Decompose walk: the PHP callbacks, the user value, and the outline's arrays as the walk
+ * began, which FreeType keeps reading between callbacks. */
+typedef struct {
+	zval callbacks[4];             /* move_to, line_to, conic_to, cubic_to */
+	zval *user;
+	zval *outline;
+	FT_Outline *walked;
+	FT_Vector *points;
+	char *tags;
+	short *contours;
+} phpft_walk;
+
+static const char *const phpft_walk_names[4] = { "move_to", "line_to", "conic_to", "cubic_to" };
+
+/* Calls one PHP callback with copies of its points, then the user value. A PHP exception stops the walk. */
+static int phpft_walk_call(phpft_walk *w, int which, int count, const FT_Vector **points)
+{
+	zval args[4], rv;
+	int result;
+
+	for (int i = 0; i < count; i++) {
+		object_init_ex(&args[i], phpft_ce_FT_Vector);
+		PHPFT_SET_LONG(&args[i], "x", points[i]->x);
+		PHPFT_SET_LONG(&args[i], "y", points[i]->y);
+	}
+	ZVAL_COPY_VALUE(&args[count], w->user);
+	ZVAL_UNDEF(&rv);
+	call_user_function(NULL, NULL, &w->callbacks[which], &rv, (uint32_t) count + 1, args);
+	for (int i = 0; i < count; i++) {
+		zval_ptr_dtor(&args[i]);
+	}
+	result = EG(exception) ? 1 : (int) zval_get_long(&rv);
+	zval_ptr_dtor(&rv);
+	if (EG(exception)) {
+		return result;
+	}
+	/* FreeType reads the arrays it began with after this returns: released or moved, they are freed memory. */
+	if (!PHPFT_PROBE_OFF("freetype-outline-walk") && (phpft_handle_ptr(w->outline) != w->walked
+			|| w->walked->points != w->points || w->walked->tags != w->tags || w->walked->contours != w->contours)) {
+		zend_value_error("FT_Outline_Decompose(): a callback released or reloaded the outline being walked"); /* binding:freetype-outline-walk */
+		return 1;
+	}
+	return result;
+}
+
+static int phpft_move_to(const FT_Vector *to, void *user)
+{
+	return phpft_walk_call(user, 0, 1, &to);
+}
+
+static int phpft_line_to(const FT_Vector *to, void *user)
+{
+	return phpft_walk_call(user, 1, 1, &to);
+}
+
+static int phpft_conic_to(const FT_Vector *control, const FT_Vector *to, void *user)
+{
+	const FT_Vector *points[2] = { control, to };
+
+	return phpft_walk_call(user, 2, 2, points);
+}
+
+static int phpft_cubic_to(const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user)
+{
+	const FT_Vector *points[3] = { control1, control2, to };
+
+	return phpft_walk_call(user, 3, 3, points);
+}
+
+ZEND_FUNCTION(FT_Outline_Decompose)
+{
+	zval *outline, *funcs_obj, *user, rv;
+	phpft_walk walk;
+	FT_Outline_Funcs funcs;
+	bool missing = false;
+	FT_Error error;
+
+	ZEND_PARSE_PARAMETERS_START(3, 3)
+		Z_PARAM_OBJECT_OF_CLASS(outline, phpft_ce_FT_Outline)
+		Z_PARAM_OBJECT_OF_CLASS(funcs_obj, phpft_ce_FT_Outline_Funcs)
+		Z_PARAM_ZVAL(user)
+	ZEND_PARSE_PARAMETERS_END();
+
+	for (int i = 0; i < 4; i++) {
+		zval *callback = zend_read_property(phpft_ce_FT_Outline_Funcs, Z_OBJ_P(funcs_obj), phpft_walk_names[i], strlen(phpft_walk_names[i]), false, &rv);
+
+		ZVAL_COPY(&walk.callbacks[i], callback);
+		missing = missing || Z_TYPE(walk.callbacks[i]) != IS_OBJECT;
+	}
+	funcs.shift = (int) phpft_long_prop(Z_OBJ_P(funcs_obj), ZEND_STRL("shift"));
+	funcs.delta = (FT_Pos) phpft_long_prop(Z_OBJ_P(funcs_obj), ZEND_STRL("delta"));
+	if (!EG(exception) && !PHPFT_PROBE_OFF("freetype-outline-funcs") && missing) {
+		zend_argument_value_error(2, "must have a callable in move_to, line_to, conic_to and cubic_to"); /* binding:freetype-outline-funcs */
+	}
+	if (EG(exception)) {
+		for (int i = 0; i < 4; i++) {
+			zval_ptr_dtor(&walk.callbacks[i]);
+		}
+		RETURN_THROWS();
+	}
+	/* A null member is passed as NULL, which FreeType calls: probe builds only, with the site off. */
+	funcs.move_to = Z_TYPE(walk.callbacks[0]) == IS_OBJECT ? phpft_move_to : NULL;
+	funcs.line_to = Z_TYPE(walk.callbacks[1]) == IS_OBJECT ? phpft_line_to : NULL;
+	funcs.conic_to = Z_TYPE(walk.callbacks[2]) == IS_OBJECT ? phpft_conic_to : NULL;
+	funcs.cubic_to = Z_TYPE(walk.callbacks[3]) == IS_OBJECT ? phpft_cubic_to : NULL;
+	walk.user = user;
+	walk.outline = outline;
+	walk.walked = phpft_handle_ptr(outline);
+	walk.points = walk.walked != NULL ? walk.walked->points : NULL;
+	walk.tags = walk.walked != NULL ? walk.walked->tags : NULL;
+	walk.contours = walk.walked != NULL ? walk.walked->contours : NULL;
+
+	error = FT_Outline_Decompose(walk.walked, &funcs, &walk);
+	for (int i = 0; i < 4; i++) {
+		zval_ptr_dtor(&walk.callbacks[i]);
+	}
+	if (EG(exception)) {
+		RETURN_THROWS();
+	}
+	RETURN_LONG(error);
+}
+
 void phpft_register_FT_Glyph(int module_number)
 {
 	zend_register_functions(NULL, ext_functions, NULL, MODULE_PERSISTENT);
@@ -156,4 +279,6 @@ void phpft_register_FT_Glyph(int module_number)
 	phpft_struct_setup(phpft_ce_FT_Matrix);
 	phpft_ce_FT_Bitmap = register_class_FT_Bitmap();
 	phpft_struct_setup(phpft_ce_FT_Bitmap);
+	phpft_ce_FT_Outline_Funcs = register_class_FT_Outline_Funcs();
+	phpft_struct_setup(phpft_ce_FT_Outline_Funcs);
 }

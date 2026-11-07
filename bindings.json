@@ -33,7 +33,9 @@
     }
   },
   "helpers": {
-    "marshal": [],
+    "marshal": [
+      "phpft_walk_call"
+    ],
     "translate": []
   },
   "sites": {
@@ -46,6 +48,16 @@
       "kind": "refusal",
       "outcome": 1,
       "probe": "tests/Probes/MemoryFaceSizeTest.php"
+    },
+    "freetype-outline-funcs": {
+      "kind": "refusal",
+      "outcome": 2,
+      "probe": "tests/Probes/OutlineFuncsTest.php"
+    },
+    "freetype-outline-walk": {
+      "kind": "refusal",
+      "outcome": 1,
+      "probe": "tests/Probes/OutlineWalkTest.php"
     }
   },
   "typemap": {}

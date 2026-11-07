@@ -1,5 +1,5 @@
 /* This is a generated file, edit the .stub.php file instead.
- * Stub hash: 9a39347c76194312f7ff84b3fa95c22500a90478 */
+ * Stub hash: 1f462787e76dfad8bccc40f57cd570d7516f8d73 */
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_FT_Load_Glyph, 0, 3, IS_LONG, 0)
 	ZEND_ARG_OBJ_INFO(0, face, FT_Face, 0)
@@ -23,6 +23,12 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_FT_Outline_Embolden, 0, 2, IS_LO
 	ZEND_ARG_TYPE_INFO(0, strength, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_FT_Outline_Decompose, 0, 3, IS_LONG, 0)
+	ZEND_ARG_OBJ_INFO(0, outline, FT_Outline, 0)
+	ZEND_ARG_OBJ_INFO(0, func_interface, FT_Outline_Funcs, 0)
+	ZEND_ARG_TYPE_INFO(0, user, IS_MIXED, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_class_FT_GlyphSlot___construct, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
@@ -43,6 +49,7 @@ ZEND_FUNCTION(FT_Load_Glyph);
 ZEND_FUNCTION(FT_Render_Glyph);
 ZEND_FUNCTION(FT_Set_Transform);
 ZEND_FUNCTION(FT_Outline_Embolden);
+ZEND_FUNCTION(FT_Outline_Decompose);
 ZEND_METHOD(FT_GlyphSlot, __construct);
 ZEND_METHOD(FT_GlyphSlot, pointer);
 ZEND_METHOD(FT_GlyphSlot, fromPointer);
@@ -55,6 +62,7 @@ static const zend_function_entry ext_functions[] = {
 	ZEND_FE(FT_Render_Glyph, arginfo_FT_Render_Glyph)
 	ZEND_FE(FT_Set_Transform, arginfo_FT_Set_Transform)
 	ZEND_FE(FT_Outline_Embolden, arginfo_FT_Outline_Embolden)
+	ZEND_FE(FT_Outline_Decompose, arginfo_FT_Outline_Decompose)
 	ZEND_FE_END
 };
 
@@ -371,6 +379,56 @@ static zend_class_entry *register_class_FT_Bitmap(void)
 	zend_string *property_palette_name = zend_string_init("palette", sizeof("palette") - 1, 1);
 	zend_declare_typed_property(class_entry, property_palette_name, &property_palette_default_value, ZEND_ACC_PUBLIC, NULL, (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_LONG));
 	zend_string_release(property_palette_name);
+
+	return class_entry;
+}
+
+static zend_class_entry *register_class_FT_Outline_Funcs(void)
+{
+	zend_class_entry ce, *class_entry;
+
+	INIT_CLASS_ENTRY(ce, "FT_Outline_Funcs", NULL);
+	class_entry = zend_register_internal_class_with_flags(&ce, NULL, ZEND_ACC_FINAL);
+
+	zval property_move_to_default_value;
+	ZVAL_NULL(&property_move_to_default_value);
+	zend_string *property_move_to_name = zend_string_init("move_to", sizeof("move_to") - 1, 1);
+	zend_string *property_move_to_class_Closure = zend_string_init("Closure", sizeof("Closure")-1, 1);
+	zend_declare_typed_property(class_entry, property_move_to_name, &property_move_to_default_value, ZEND_ACC_PUBLIC, NULL, (zend_type) ZEND_TYPE_INIT_CLASS(property_move_to_class_Closure, 0, MAY_BE_NULL));
+	zend_string_release(property_move_to_name);
+
+	zval property_line_to_default_value;
+	ZVAL_NULL(&property_line_to_default_value);
+	zend_string *property_line_to_name = zend_string_init("line_to", sizeof("line_to") - 1, 1);
+	zend_string *property_line_to_class_Closure = zend_string_init("Closure", sizeof("Closure")-1, 1);
+	zend_declare_typed_property(class_entry, property_line_to_name, &property_line_to_default_value, ZEND_ACC_PUBLIC, NULL, (zend_type) ZEND_TYPE_INIT_CLASS(property_line_to_class_Closure, 0, MAY_BE_NULL));
+	zend_string_release(property_line_to_name);
+
+	zval property_conic_to_default_value;
+	ZVAL_NULL(&property_conic_to_default_value);
+	zend_string *property_conic_to_name = zend_string_init("conic_to", sizeof("conic_to") - 1, 1);
+	zend_string *property_conic_to_class_Closure = zend_string_init("Closure", sizeof("Closure")-1, 1);
+	zend_declare_typed_property(class_entry, property_conic_to_name, &property_conic_to_default_value, ZEND_ACC_PUBLIC, NULL, (zend_type) ZEND_TYPE_INIT_CLASS(property_conic_to_class_Closure, 0, MAY_BE_NULL));
+	zend_string_release(property_conic_to_name);
+
+	zval property_cubic_to_default_value;
+	ZVAL_NULL(&property_cubic_to_default_value);
+	zend_string *property_cubic_to_name = zend_string_init("cubic_to", sizeof("cubic_to") - 1, 1);
+	zend_string *property_cubic_to_class_Closure = zend_string_init("Closure", sizeof("Closure")-1, 1);
+	zend_declare_typed_property(class_entry, property_cubic_to_name, &property_cubic_to_default_value, ZEND_ACC_PUBLIC, NULL, (zend_type) ZEND_TYPE_INIT_CLASS(property_cubic_to_class_Closure, 0, MAY_BE_NULL));
+	zend_string_release(property_cubic_to_name);
+
+	zval property_shift_default_value;
+	ZVAL_LONG(&property_shift_default_value, 0);
+	zend_string *property_shift_name = zend_string_init("shift", sizeof("shift") - 1, 1);
+	zend_declare_typed_property(class_entry, property_shift_name, &property_shift_default_value, ZEND_ACC_PUBLIC, NULL, (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_LONG));
+	zend_string_release(property_shift_name);
+
+	zval property_delta_default_value;
+	ZVAL_LONG(&property_delta_default_value, 0);
+	zend_string *property_delta_name = zend_string_init("delta", sizeof("delta") - 1, 1);
+	zend_declare_typed_property(class_entry, property_delta_name, &property_delta_default_value, ZEND_ACC_PUBLIC, NULL, (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_LONG));
+	zend_string_release(property_delta_name);
 
 	return class_entry;
 }

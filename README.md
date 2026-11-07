@@ -6,7 +6,7 @@
 
 
 [![CI](https://img.shields.io/github/actions/workflow/status/php-io-extensions/freetype/ci.yml?style=flat-square&label=CI)](https://github.com/php-io-extensions/freetype/actions/workflows/ci.yml)
-[![FreeType API](https://img.shields.io/badge/FreeType_API-5.8%25_%2813%2F224%29-blue?style=flat-square)](SUPPORT.md)
+[![FreeType API](https://img.shields.io/badge/FreeType_API-6.2%25_%2814%2F224%29-blue?style=flat-square)](SUPPORT.md)
 [![Packagist](https://img.shields.io/packagist/v/php-io-extensions/freetype?style=flat-square)](https://packagist.org/packages/php-io-extensions/freetype)
 [![PHP](https://img.shields.io/packagist/dependency-v/php-io-extensions/freetype/php?style=flat-square&label=PHP)](https://packagist.org/packages/php-io-extensions/freetype)
 [![License](https://img.shields.io/github/license/php-io-extensions/freetype?style=flat-square)](LICENSE)

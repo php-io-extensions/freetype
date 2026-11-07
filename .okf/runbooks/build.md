@@ -18,7 +18,7 @@ macOS: `bash install-macos.sh` builds in a temp copy for Homebrew `php@8.4` and 
 
 Linux (Debian trixie, Ubuntu 24.04, whose FreeType 2.13.2 is the floor): `bash install-debian-trixie.sh` in the checkout. It needs sudo to install the `.so` and the ini files.
 
-Probe build: `FREETYPE_CONFIGURE=--enable-freetype-probes bash install-macos.sh /opt/homebrew/opt/php@8.4/bin/php`. Run `tests/Probes`, then reinstall the release build. Never ship a probe build.
+Probe build: `FREETYPE_CONFIGURE=--enable-freetype-probes bash install-macos.sh /opt/homebrew/opt/php@8.4/bin/php`. Run `tests/Probes` with a parent PHP that loads only this extension (`php -n -d extension=<extension_dir>/freetype.so -d memory_limit=128M vendor/bin/pest tests/Probes`): with every Homebrew extension loaded in the parent, a child's SIGSEGV does not end it and the run hangs. Then reinstall the release build. Never ship a probe build.
 
 Tests: `composer install`, then `XDEBUG_MODE=off php84 -d memory_limit=128M vendor/bin/pest` and the same with `zhp`. Gate a commit on the exit code.
 
