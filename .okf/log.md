@@ -1,5 +1,9 @@
 # Log
 
+## 2026-11-08
+
+* **Version**: 0.11.1 in `PHP_FREETYPE_VERSION` (`php_freetype.h`) and the README's phpinfo block; nothing else changed.
+
 ## 2026-11-05
 
 * Bundle created with ext-freetype 0.11.0: `FT_Init_FreeType`, `FT_Done_FreeType`, `FT_New_Face`, `FT_New_Memory_Face`, `FT_Done_Face`, `FT_Set_Char_Size`, `FT_Set_Pixel_Sizes`, `FT_Get_Sfnt_Table`, `FT_Get_Char_Index`, `FT_Load_Glyph`, `FT_Render_Glyph`, `FT_Set_Transform`, `FT_Outline_Embolden` at the FreeType 2.13.2 API, the floor (Ubuntu 24.04's FreeType). Built on Homebrew PHP 8.4 NTS and ZTS against FreeType 2.15.0, and on Ubuntu against 2.13.2. [bindings](api/bindings.md), [handles](architecture/handles.md), [structs](architecture/structs.md), [build](runbooks/build.md).

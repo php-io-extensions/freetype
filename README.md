@@ -139,7 +139,7 @@ $ php --ri freetype
 freetype
 
 freetype support => enabled
-Version => 0.11.0
+Version => 0.11.1
 FreeType headers => 2.15.0
 ```
 
